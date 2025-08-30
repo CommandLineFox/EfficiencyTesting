@@ -45,7 +45,6 @@ namespace MyBenchmarks
 
     public class StringEfficiency
     {
-        //[Params(1000000)]
         public int N = 10000000;
         private readonly string[] array;
         private readonly Func<string, string> operation = s => s + s.ToUpper();
@@ -86,7 +85,6 @@ namespace MyBenchmarks
     }
     public class ObjectEfficiency
     {
-        //[Params(1000000)]
         public int N = 10000000;
         private readonly int[] array;
 
@@ -279,7 +277,6 @@ namespace MyBenchmarks
             array = [.. Enumerable.Range(1, N).Select(x => $"item{x}")];
         }
 
-        // Uslov: string počinje sa "item1"
         private readonly Func<string, bool> condition = s => s.StartsWith("item1");
 
         [Benchmark]
@@ -333,7 +330,6 @@ namespace MyBenchmarks
             public string Name { get; set; } = string.Empty;
         }
 
-        // Uslov: osoba ima paran Id i ime koje sadrži "5"
         private readonly Func<Person, bool> condition = p => p.Id % 2 == 0 && p.Name.Contains('5');
 
         [Benchmark]
@@ -510,7 +506,7 @@ namespace MyBenchmarks
 
     public class GroupByNumberEfficiency
     {
-        private int N = 1000000;
+        private int N = 10000000;
         private readonly int[] numbers;
 
         public GroupByNumberEfficiency()
@@ -556,7 +552,7 @@ namespace MyBenchmarks
 
     public class GroupByStringEfficiency
     {
-        private int N = 100000;
+        private int N = 10000000;
         private readonly string[] words;
 
         public GroupByStringEfficiency()
@@ -601,7 +597,7 @@ namespace MyBenchmarks
 
     public class GroupByObjectEfficiency
     {
-        private int N = 1000000;
+        private int N = 10000000;
         private readonly Person[] people;
 
         public GroupByObjectEfficiency()
@@ -651,21 +647,519 @@ namespace MyBenchmarks
         }
     }
 
+    public class CheapAnyAllEfficiency
+    {
+        private int N = 10000000;
+        private readonly int[] array;
+
+        public CheapAnyAllEfficiency()
+        {
+            array = Enumerable.Range(1, N).ToArray();
+        }
+
+        private readonly Func<int, bool> predicate = x => x % 2 == 0;
+
+        [Benchmark]
+        public bool ForLoopAny()
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (predicate(array[i])) return true;
+            }
+            return false;
+        }
+
+        [Benchmark]
+        public bool ForEachAny()
+        {
+            foreach (var num in array)
+            {
+                if (predicate(num)) return true;
+            }
+            return false;
+        }
+
+        [Benchmark]
+        public bool LinqAny()
+        {
+            return array.Any(predicate);
+        }
+
+        [Benchmark]
+        public bool ForLoopAll()
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (!predicate(array[i])) return false;
+            }
+            return true;
+        }
+
+        [Benchmark]
+        public bool ForEachAll()
+        {
+            foreach (var num in array)
+            {
+                if (!predicate(num)) return false;
+            }
+            return true;
+        }
+
+        [Benchmark]
+        public bool LinqAll()
+        {
+            return array.All(predicate);
+        }
+    }
+
+    public class ExpensiveAnyAllEfficiency
+    {
+        private int N = 10000000;
+        private readonly int[] array;
+
+        public ExpensiveAnyAllEfficiency()
+        {
+            array = Enumerable.Range(1, N).ToArray();
+        }
+
+        private readonly Func<int, bool> predicate = x => Math.Sin(x) * Math.Log(x + 1) + Math.Sqrt(x) > 1000;
+
+        [Benchmark]
+        public bool ForLoopAny()
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (predicate(array[i])) return true;
+            }
+            return false;
+        }
+
+        [Benchmark]
+        public bool ForEachAny()
+        {
+            foreach (var num in array)
+            {
+                if (predicate(num)) return true;
+            }
+            return false;
+        }
+
+        [Benchmark]
+        public bool LinqAny()
+        {
+            return array.Any(predicate);
+        }
+
+        [Benchmark]
+        public bool ForLoopAll()
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (!predicate(array[i])) return false;
+            }
+            return true;
+        }
+
+        [Benchmark]
+        public bool ForEachAll()
+        {
+            foreach (var num in array)
+            {
+                if (!predicate(num)) return false;
+            }
+            return true;
+        }
+
+        [Benchmark]
+        public bool LinqAll()
+        {
+            return array.All(predicate);
+        }
+    }
+
+    public class AnyAllStringEfficiency
+    {
+        private int N = 10000000;
+        private readonly string[] array;
+
+        public AnyAllStringEfficiency()
+        {
+            array = [.. Enumerable.Range(1, N).Select(x => $"item{x}")];
+        }
+
+        private readonly Func<string, bool> condition = s => s.StartsWith("item1");
+
+        [Benchmark]
+        public bool ForLoopAny()
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (condition(array[i])) return true;
+            }
+            return false;
+        }
+
+        [Benchmark]
+        public bool ForEachAny()
+        {
+            foreach (var str in array)
+            {
+                if (condition(str)) return true;
+            }
+            return false;
+        }
+
+        [Benchmark]
+        public bool LinqAny() => array.Any(condition);
+
+        [Benchmark]
+        public bool ForLoopAll()
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (!condition(array[i])) return false;
+            }
+            return true;
+        }
+
+        [Benchmark]
+        public bool ForEachAll()
+        {
+            foreach (var str in array)
+            {
+                if (!condition(str)) return false;
+            }
+            return true;
+        }
+
+        [Benchmark]
+        public bool LinqAll() => array.All(condition);
+    }
+
+    public class AnyAllObjectEfficiency
+    {
+        private int N = 10000000;
+        private readonly Person[] people;
+
+        public AnyAllObjectEfficiency()
+        {
+            people = Enumerable.Range(1, N).Select(x => new Person { Id = x, Name = $"Name{x}" }).ToArray();
+        }
+
+        public class Person
+        {
+            public int Id { get; set; }
+            public string Name { get; set; } = string.Empty;
+        }
+
+        private readonly Func<Person, bool> condition = p => p.Id % 2 == 0 && p.Name.Contains('5');
+
+        [Benchmark]
+        public bool ForLoopAny()
+        {
+            for (int i = 0; i < people.Length; i++)
+            {
+                if (condition(people[i])) return true;
+            }
+            return false;
+        }
+
+        [Benchmark]
+        public bool ForEachAny()
+        {
+            foreach (var person in people)
+            {
+                if (condition(person)) return true;
+            }
+            return false;
+        }
+
+        [Benchmark]
+        public bool LinqAny() => people.Any(condition);
+
+        [Benchmark]
+        public bool ForLoopAll()
+        {
+            for (int i = 0; i < people.Length; i++)
+            {
+                if (!condition(people[i])) return false;
+            }
+            return true;
+        }
+
+        [Benchmark]
+        public bool ForEachAll()
+        {
+            foreach (var person in people)
+            {
+                if (!condition(person)) return false;
+            }
+            return true;
+        }
+
+        [Benchmark]
+        public bool LinqAll() => people.All(condition);
+    }
+
+    public class TakeEfficiency
+    {
+        private int N = 10000000;
+        private int[] array;
+        private int takeCount = 500000;
+
+        public TakeEfficiency()
+        {
+            array = Enumerable.Range(1, N).ToArray();
+        }
+
+        [Benchmark]
+        public int[] ForLoopTake()
+        {
+            var result = new int[takeCount];
+            for (int i = 0; i < takeCount; i++)
+                result[i] = array[i];
+            return result;
+        }
+
+        [Benchmark]
+        public int[] ForeachLoopTake()
+        {
+            var result = new int[takeCount];
+            int index = 0;
+            foreach (var item in array)
+            {
+                if (index >= takeCount) break;
+                result[index++] = item;
+            }
+            return result;
+        }
+
+        [Benchmark]
+        public int[] LinqTake()
+        {
+            return array.Take(takeCount).ToArray();
+        }
+    }
+
+    public class SkipEfficiency
+    {
+        private int N = 10000000;
+        private int[] array;
+        private int skipCount = 500000;
+
+        public SkipEfficiency()
+        {
+            array = Enumerable.Range(1, N).ToArray();
+        }
+
+        [Benchmark]
+        public int[] ForLoopSkip()
+        {
+            var result = new int[N - skipCount];
+            for (int i = skipCount; i < N; i++)
+                result[i - skipCount] = array[i];
+            return result;
+        }
+
+        [Benchmark]
+        public int[] ForeachLoopSkip()
+        {
+            var result = new int[N - skipCount];
+            int index = 0;
+            int current = 0;
+            foreach (var item in array)
+            {
+                if (current++ < skipCount) continue;
+                result[index++] = item;
+            }
+            return result;
+        }
+
+        [Benchmark]
+        public int[] LinqSkip()
+        {
+            return array.Skip(skipCount).ToArray();
+        }
+    }
+
+    public class PaginationEfficiency
+    {
+        private int N = 10000000;
+        private int[] array;
+        private int pageSize = 1000;
+        private int pageIndex = 5000;
+
+        public PaginationEfficiency()
+        {
+            array = Enumerable.Range(1, N).ToArray();
+        }
+
+        [Benchmark]
+        public int[] ForLoopPagination()
+        {
+            var result = new int[pageSize];
+            int start = (pageIndex - 1) * pageSize;
+            for (int i = 0; i < pageSize; i++)
+                result[i] = array[start + i];
+            return result;
+        }
+
+        [Benchmark]
+        public int[] ForeachLoopPagination()
+        {
+            var result = new int[pageSize];
+            int start = (pageIndex - 1) * pageSize;
+            int index = 0;
+            int current = 0;
+            foreach (var item in array)
+            {
+                if (current++ < start) continue;
+                if (index >= pageSize) break;
+                result[index++] = item;
+            }
+            return result;
+        }
+
+        [Benchmark]
+        public int[] LinqPagination()
+        {
+            return array.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToArray();
+        }
+    }
+
+    public class SelectManyEfficiency
+    {
+        private int N = 100000;
+        private int M = 10000;
+        private int[][] arrayOfArrays;
+
+        public SelectManyEfficiency()
+        {
+            arrayOfArrays = new int[N][];
+            for (int i = 0; i < N; i++)
+            {
+                arrayOfArrays[i] = Enumerable.Range(1, M).ToArray();
+            }
+        }
+
+        [Benchmark]
+        public int[] ForLoopSelectMany()
+        {
+            var list = new List<int>(N * M);
+            for (int i = 0; i < arrayOfArrays.Length; i++)
+            {
+                for (int j = 0; j < arrayOfArrays[i].Length; j++)
+                {
+                    list.Add(arrayOfArrays[i][j]);
+                }
+            }
+            return list.ToArray();
+        }
+
+        [Benchmark]
+        public int[] ForeachLoopSelectMany()
+        {
+            var list = new List<int>(N * M);
+            foreach (var inner in arrayOfArrays)
+            {
+                foreach (var item in inner)
+                {
+                    list.Add(item);
+                }
+            }
+            return list.ToArray();
+        }
+
+        [Benchmark]
+        public int[] LinqSelectMany()
+        {
+            return arrayOfArrays.SelectMany(inner => inner).ToArray();
+        }
+    }
+
     public class Program
     {
         public static void Main(string[] args)
         {
-            //var summary1 = BenchmarkRunner.Run<SelectEfficiency>();
-            //var summary2 = BenchmarkRunner.Run<StringEfficiency>();
-            //var summary3 = BenchmarkRunner.Run<ObjectEfficiency>();
-            //var summary4 = BenchmarkRunner.Run<ObjectUpdateEfficiency>();
-            //var summary5 = BenchmarkRunner.Run<CheapWhereEfficiency>();
-            //var summary6 = BenchmarkRunner.Run<ExpensiveWhereEfficiency>();
-            //var summary7 = BenchmarkRunner.Run<WhereStringEfficiency>();
-            //var summary8 = BenchmarkRunner.Run<WhereObjectEfficiency>();
-            //var summary9 = BenchmarkRunner.Run<AggregateSumEfficiency>();
-            //var summary10 = BenchmarkRunner.Run<AggregateStringEfficiency>();
-            var summary11 = BenchmarkRunner.Run<AggregateObjectEfficiency>();
+            Console.WriteLine("Unesite broj benchmarka (1-22):");
+            if (!int.TryParse(Console.ReadLine(), out int choice))
+            {
+                Console.WriteLine("Neispravan unos.");
+                return;
+            }
+
+            switch (choice)
+            {
+                case 1:
+                    BenchmarkRunner.Run<SelectEfficiency>();
+                    break;
+                case 2:
+                    BenchmarkRunner.Run<StringEfficiency>();
+                    break;
+                case 3:
+                    BenchmarkRunner.Run<ObjectEfficiency>();
+                    break;
+                case 4:
+                    BenchmarkRunner.Run<ObjectUpdateEfficiency>();
+                    break;
+                case 5:
+                    BenchmarkRunner.Run<CheapWhereEfficiency>();
+                    break;
+                case 6:
+                    BenchmarkRunner.Run<ExpensiveWhereEfficiency>();
+                    break;
+                case 7:
+                    BenchmarkRunner.Run<WhereStringEfficiency>();
+                    break;
+                case 8:
+                    BenchmarkRunner.Run<WhereObjectEfficiency>();
+                    break;
+                case 9:
+                    BenchmarkRunner.Run<AggregateSumEfficiency>();
+                    break;
+                case 10:
+                    BenchmarkRunner.Run<AggregateStringEfficiency>();
+                    break;
+                case 11:
+                    BenchmarkRunner.Run<AggregateObjectEfficiency>();
+                    break;
+                case 12:
+                    BenchmarkRunner.Run<GroupByNumberEfficiency>();
+                    break;
+                case 13:
+                    BenchmarkRunner.Run<GroupByStringEfficiency>();
+                    break;
+                case 14:
+                    BenchmarkRunner.Run<GroupByObjectEfficiency>();
+                    break;
+                case 15:
+                    BenchmarkRunner.Run<CheapAnyAllEfficiency>();
+                    break;
+                case 16:
+                    BenchmarkRunner.Run<ExpensiveAnyAllEfficiency>();
+                    break;
+                case 17:
+                    BenchmarkRunner.Run<AnyAllStringEfficiency>();
+                    break;
+                case 18:
+                    BenchmarkRunner.Run<AnyAllObjectEfficiency>();
+                    break;
+                case 19:
+                    BenchmarkRunner.Run<TakeEfficiency>();
+                    break;
+                case 20:
+                    BenchmarkRunner.Run<SkipEfficiency>();
+                    break;
+                case 21:
+                    BenchmarkRunner.Run<PaginationEfficiency>();
+                    break;
+                case 22:
+                    BenchmarkRunner.Run<SelectManyEfficiency>();
+                    break;
+                default:
+                    Console.WriteLine("Nepoznat broj benchmarka.");
+                    break;
+            }
         }
     }
 }
