@@ -5,7 +5,7 @@ namespace MyBenchmarks
 {
     public class SelectEfficiency
     {
-        private const int N = 1000000000;
+        public int N = 10000000;
         private readonly int[] array;
         private readonly Func<int, double> operation = x => x + x;
 
@@ -43,17 +43,16 @@ namespace MyBenchmarks
         }
     }
 
-    [SimpleJob]
-    [MarkdownExporterAttribute.GitHub]
     public class StringEfficiency
     {
-        private const int N = 100000000;
+        //[Params(1000000)]
+        public int N = 10000000;
         private readonly string[] array;
-        private readonly Func<string, string> operation = s => s.ToUpper();
+        private readonly Func<string, string> operation = s => s + s.ToUpper();
 
         public StringEfficiency()
         {
-            array = Enumerable.Range(1, N).Select(x => $"item{x}").ToArray();
+            array = [.. Enumerable.Range(1, N).Select(x => $"item{x}")];
         }
 
         [Benchmark]
@@ -87,7 +86,8 @@ namespace MyBenchmarks
     }
     public class ObjectEfficiency
     {
-        private const int N = 100000000;
+        //[Params(1000000)]
+        public int N = 10000000;
         private readonly int[] array;
 
         public ObjectEfficiency()
@@ -136,7 +136,7 @@ namespace MyBenchmarks
 
     public class ObjectUpdateEfficiency
     {
-        private const int N = 100000000;
+        private int N = 10000000;
         private readonly Person[] people;
 
         public ObjectUpdateEfficiency()
@@ -185,7 +185,7 @@ namespace MyBenchmarks
 
     public class CheapWhereEfficiency
     {
-        private const int N = 1000000000;
+        private int N = 10000000;
         private readonly int[] array;
 
         public CheapWhereEfficiency()
@@ -228,7 +228,7 @@ namespace MyBenchmarks
 
     public class ExpensiveWhereEfficiency
     {
-        private const int N = 1000000000;
+        private int N = 10000000;
         private readonly int[] array;
 
         public ExpensiveWhereEfficiency()
@@ -271,7 +271,7 @@ namespace MyBenchmarks
 
     public class WhereStringEfficiency
     {
-        private const int N = 100000000;
+        private int N = 10000000;
         private readonly string[] array;
 
         public WhereStringEfficiency()
@@ -319,7 +319,7 @@ namespace MyBenchmarks
 
     public class WhereObjectEfficiency
     {
-        private const int N = 100000000;
+        private int N = 10000000;
         private readonly Person[] people;
 
         public WhereObjectEfficiency()
@@ -371,11 +371,291 @@ namespace MyBenchmarks
         }
     }
 
+    public class AggregateSumEfficiency
+    {
+        private int N = 10000000;
+        private readonly int[] numbers;
+
+        public AggregateSumEfficiency()
+        {
+            numbers = Enumerable.Range(1, N).ToArray();
+        }
+
+        [Benchmark]
+        public long ForLoopSum()
+        {
+            long sum = 0;
+            for (int i = 0; i < numbers.Length; i++)
+            {
+                sum += numbers[i];
+            }
+            return sum;
+        }
+
+        [Benchmark]
+        public long ForEachLoopSum()
+        {
+            long sum = 0;
+            foreach (var num in numbers)
+            {
+                sum += num;
+            }
+            return sum;
+        }
+
+        [Benchmark]
+        public long LinqAggregateSum()
+        {
+            return numbers.Aggregate((a, b) => a + b);
+        }
+    }
+
+    public class AggregateStringEfficiency
+    {
+        private int N = 10000000;
+        private readonly string[] words;
+
+        public AggregateStringEfficiency()
+        {
+            words = Enumerable.Range(1, N).Select(x => $"Word{x}").ToArray();
+        }
+
+        [Benchmark]
+        public string ForLoopConcat()
+        {
+            string result = "";
+            for (int i = 0; i < words.Length; i++)
+            {
+                result += words[i];
+            }
+            return result;
+        }
+
+        [Benchmark]
+        public string ForEachLoopConcat()
+        {
+            string result = "";
+            foreach (var word in words)
+            {
+                result += word;
+            }
+            return result;
+        }
+
+        [Benchmark]
+        public string LinqAggregateConcat()
+        {
+            return words.Aggregate((a, b) => a + b);
+        }
+    }
+
+    public class AggregateObjectEfficiency
+    {
+        private int N = 10000000;
+        private readonly int[] numbers;
+
+        public AggregateObjectEfficiency()
+        {
+            numbers = Enumerable.Range(1, N).ToArray();
+        }
+
+        public class Stats
+        {
+            public int Min { get; set; }
+            public int Max { get; set; }
+            public long Sum { get; set; }
+        }
+
+        [Benchmark]
+        public Stats ForLoopStats()
+        {
+            var stats = new Stats { Min = int.MaxValue, Max = int.MinValue, Sum = 0 };
+            for (int i = 0; i < numbers.Length; i++)
+            {
+                int n = numbers[i];
+                if (n < stats.Min) stats.Min = n;
+                if (n > stats.Max) stats.Max = n;
+                stats.Sum += n;
+            }
+            return stats;
+        }
+
+        [Benchmark]
+        public Stats ForEachLoopStats()
+        {
+            var stats = new Stats { Min = int.MaxValue, Max = int.MinValue, Sum = 0 };
+            foreach (var n in numbers)
+            {
+                if (n < stats.Min) stats.Min = n;
+                if (n > stats.Max) stats.Max = n;
+                stats.Sum += n;
+            }
+            return stats;
+        }
+
+        [Benchmark]
+        public Stats LinqAggregateStats()
+        {
+            return numbers.Aggregate(
+                new Stats { Min = int.MaxValue, Max = int.MinValue, Sum = 0 },
+                (acc, n) =>
+                {
+                    if (n < acc.Min) acc.Min = n;
+                    if (n > acc.Max) acc.Max = n;
+                    acc.Sum += n;
+                    return acc;
+                });
+        }
+    }
+
+    public class GroupByNumberEfficiency
+    {
+        private int N = 1000000;
+        private readonly int[] numbers;
+
+        public GroupByNumberEfficiency()
+        {
+            numbers = Enumerable.Range(1, N).ToArray();
+        }
+
+        [Benchmark]
+        public Dictionary<int, List<int>> ForLoopGroupByModulo()
+        {
+            var groups = new Dictionary<int, List<int>>();
+            for (int i = 0; i < numbers.Length; i++)
+            {
+                int key = numbers[i] % 10;
+                if (!groups.ContainsKey(key))
+                    groups[key] = new List<int>();
+                groups[key].Add(numbers[i]);
+            }
+            return groups;
+        }
+
+        [Benchmark]
+        public Dictionary<int, List<int>> ForEachLoopGroupByModulo()
+        {
+            var groups = new Dictionary<int, List<int>>();
+            foreach (var num in numbers)
+            {
+                int key = num % 10;
+                if (!groups.ContainsKey(key))
+                    groups[key] = new List<int>();
+                groups[key].Add(num);
+            }
+            return groups;
+        }
+
+        [Benchmark]
+        public Dictionary<int, List<int>> LinqGroupByModulo()
+        {
+            return numbers.GroupBy(x => x % 10)
+                          .ToDictionary(g => g.Key, g => g.ToList());
+        }
+    }
+
+    public class GroupByStringEfficiency
+    {
+        private int N = 100000;
+        private readonly string[] words;
+
+        public GroupByStringEfficiency()
+        {
+            words = Enumerable.Range(1, N).Select(x => $"Word{x}").ToArray();
+        }
+
+        [Benchmark]
+        public Dictionary<char, List<string>> ForLoopGroupByFirstLetter()
+        {
+            var groups = new Dictionary<char, List<string>>();
+            for (int i = 0; i < words.Length; i++)
+            {
+                char key = words[i][0];
+                if (!groups.ContainsKey(key))
+                    groups[key] = new List<string>();
+                groups[key].Add(words[i]);
+            }
+            return groups;
+        }
+
+        [Benchmark]
+        public Dictionary<char, List<string>> ForEachLoopGroupByFirstLetter()
+        {
+            var groups = new Dictionary<char, List<string>>();
+            foreach (var word in words)
+            {
+                char key = word[0];
+                if (!groups.ContainsKey(key))
+                    groups[key] = new List<string>();
+                groups[key].Add(word);
+            }
+            return groups;
+        }
+
+        [Benchmark]
+        public Dictionary<char, List<string>> LinqGroupByFirstLetter()
+        {
+            return words.GroupBy(w => w[0]).ToDictionary(g => g.Key, g => g.ToList());
+        }
+    }
+
+    public class GroupByObjectEfficiency
+    {
+        private int N = 1000000;
+        private readonly Person[] people;
+
+        public GroupByObjectEfficiency()
+        {
+            var rnd = new Random(0);
+            people = Enumerable.Range(1, N).Select(x => new Person { Id = x, Age = rnd.Next(18, 60) }).ToArray();
+        }
+
+        public class Person
+        {
+            public int Id { get; set; }
+            public int Age { get; set; }
+        }
+
+        [Benchmark]
+        public Dictionary<int, List<Person>> ForLoopGroupByAge()
+        {
+            var groups = new Dictionary<int, List<Person>>();
+            for (int i = 0; i < people.Length; i++)
+            {
+                int key = people[i].Age;
+                if (!groups.ContainsKey(key))
+                    groups[key] = new List<Person>();
+                groups[key].Add(people[i]);
+            }
+            return groups;
+        }
+
+        [Benchmark]
+        public Dictionary<int, List<Person>> ForEachLoopGroupByAge()
+        {
+            var groups = new Dictionary<int, List<Person>>();
+            foreach (var p in people)
+            {
+                int key = p.Age;
+                if (!groups.ContainsKey(key))
+                    groups[key] = new List<Person>();
+                groups[key].Add(p);
+            }
+            return groups;
+        }
+
+        [Benchmark]
+        public Dictionary<int, List<Person>> LinqGroupByAge()
+        {
+            return people.GroupBy(p => p.Age).ToDictionary(g => g.Key, g => g.ToList());
+        }
+    }
+
     public class Program
     {
         public static void Main(string[] args)
         {
-            var summary1 = BenchmarkRunner.Run<SelectEfficiency>();
+            //var summary1 = BenchmarkRunner.Run<SelectEfficiency>();
             //var summary2 = BenchmarkRunner.Run<StringEfficiency>();
             //var summary3 = BenchmarkRunner.Run<ObjectEfficiency>();
             //var summary4 = BenchmarkRunner.Run<ObjectUpdateEfficiency>();
@@ -383,6 +663,9 @@ namespace MyBenchmarks
             //var summary6 = BenchmarkRunner.Run<ExpensiveWhereEfficiency>();
             //var summary7 = BenchmarkRunner.Run<WhereStringEfficiency>();
             //var summary8 = BenchmarkRunner.Run<WhereObjectEfficiency>();
+            //var summary9 = BenchmarkRunner.Run<AggregateSumEfficiency>();
+            //var summary10 = BenchmarkRunner.Run<AggregateStringEfficiency>();
+            var summary11 = BenchmarkRunner.Run<AggregateObjectEfficiency>();
         }
     }
 }
