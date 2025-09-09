@@ -647,260 +647,6 @@ namespace MyBenchmarks
         }
     }
 
-    public class CheapAnyAllEfficiency
-    {
-        private int N = 10000000;
-        private readonly int[] array;
-
-        public CheapAnyAllEfficiency()
-        {
-            array = Enumerable.Range(1, N).ToArray();
-        }
-
-        private readonly Func<int, bool> predicate = x => x % 2 == 0;
-
-        [Benchmark]
-        public bool ForLoopAny()
-        {
-            for (int i = 0; i < array.Length; i++)
-            {
-                if (predicate(array[i])) return true;
-            }
-            return false;
-        }
-
-        [Benchmark]
-        public bool ForEachAny()
-        {
-            foreach (var num in array)
-            {
-                if (predicate(num)) return true;
-            }
-            return false;
-        }
-
-        [Benchmark]
-        public bool LinqAny()
-        {
-            return array.Any(predicate);
-        }
-
-        [Benchmark]
-        public bool ForLoopAll()
-        {
-            for (int i = 0; i < array.Length; i++)
-            {
-                if (!predicate(array[i])) return false;
-            }
-            return true;
-        }
-
-        [Benchmark]
-        public bool ForEachAll()
-        {
-            foreach (var num in array)
-            {
-                if (!predicate(num)) return false;
-            }
-            return true;
-        }
-
-        [Benchmark]
-        public bool LinqAll()
-        {
-            return array.All(predicate);
-        }
-    }
-
-    public class ExpensiveAnyAllEfficiency
-    {
-        private int N = 10000000;
-        private readonly int[] array;
-
-        public ExpensiveAnyAllEfficiency()
-        {
-            array = Enumerable.Range(1, N).ToArray();
-        }
-
-        private readonly Func<int, bool> predicate = x => Math.Sin(x) * Math.Log(x + 1) + Math.Sqrt(x) > 1000;
-
-        [Benchmark]
-        public bool ForLoopAny()
-        {
-            for (int i = 0; i < array.Length; i++)
-            {
-                if (predicate(array[i])) return true;
-            }
-            return false;
-        }
-
-        [Benchmark]
-        public bool ForEachAny()
-        {
-            foreach (var num in array)
-            {
-                if (predicate(num)) return true;
-            }
-            return false;
-        }
-
-        [Benchmark]
-        public bool LinqAny()
-        {
-            return array.Any(predicate);
-        }
-
-        [Benchmark]
-        public bool ForLoopAll()
-        {
-            for (int i = 0; i < array.Length; i++)
-            {
-                if (!predicate(array[i])) return false;
-            }
-            return true;
-        }
-
-        [Benchmark]
-        public bool ForEachAll()
-        {
-            foreach (var num in array)
-            {
-                if (!predicate(num)) return false;
-            }
-            return true;
-        }
-
-        [Benchmark]
-        public bool LinqAll()
-        {
-            return array.All(predicate);
-        }
-    }
-
-    public class AnyAllStringEfficiency
-    {
-        private int N = 10000000;
-        private readonly string[] array;
-
-        public AnyAllStringEfficiency()
-        {
-            array = [.. Enumerable.Range(1, N).Select(x => $"item{x}")];
-        }
-
-        private readonly Func<string, bool> condition = s => s.StartsWith("item1");
-
-        [Benchmark]
-        public bool ForLoopAny()
-        {
-            for (int i = 0; i < array.Length; i++)
-            {
-                if (condition(array[i])) return true;
-            }
-            return false;
-        }
-
-        [Benchmark]
-        public bool ForEachAny()
-        {
-            foreach (var str in array)
-            {
-                if (condition(str)) return true;
-            }
-            return false;
-        }
-
-        [Benchmark]
-        public bool LinqAny() => array.Any(condition);
-
-        [Benchmark]
-        public bool ForLoopAll()
-        {
-            for (int i = 0; i < array.Length; i++)
-            {
-                if (!condition(array[i])) return false;
-            }
-            return true;
-        }
-
-        [Benchmark]
-        public bool ForEachAll()
-        {
-            foreach (var str in array)
-            {
-                if (!condition(str)) return false;
-            }
-            return true;
-        }
-
-        [Benchmark]
-        public bool LinqAll() => array.All(condition);
-    }
-
-    public class AnyAllObjectEfficiency
-    {
-        private int N = 10000000;
-        private readonly Person[] people;
-
-        public AnyAllObjectEfficiency()
-        {
-            people = Enumerable.Range(1, N).Select(x => new Person { Id = x, Name = $"Name{x}" }).ToArray();
-        }
-
-        public class Person
-        {
-            public int Id { get; set; }
-            public string Name { get; set; } = string.Empty;
-        }
-
-        private readonly Func<Person, bool> condition = p => p.Id % 2 == 0 && p.Name.Contains('5');
-
-        [Benchmark]
-        public bool ForLoopAny()
-        {
-            for (int i = 0; i < people.Length; i++)
-            {
-                if (condition(people[i])) return true;
-            }
-            return false;
-        }
-
-        [Benchmark]
-        public bool ForEachAny()
-        {
-            foreach (var person in people)
-            {
-                if (condition(person)) return true;
-            }
-            return false;
-        }
-
-        [Benchmark]
-        public bool LinqAny() => people.Any(condition);
-
-        [Benchmark]
-        public bool ForLoopAll()
-        {
-            for (int i = 0; i < people.Length; i++)
-            {
-                if (!condition(people[i])) return false;
-            }
-            return true;
-        }
-
-        [Benchmark]
-        public bool ForEachAll()
-        {
-            foreach (var person in people)
-            {
-                if (!condition(person)) return false;
-            }
-            return true;
-        }
-
-        [Benchmark]
-        public bool LinqAll() => people.All(condition);
-    }
-
     public class TakeEfficiency
     {
         private int N = 10000000;
@@ -1079,9 +825,9 @@ namespace MyBenchmarks
 
     public class Program
     {
-        public static void Main(string[] args)
+        public static void BenchmarkTests()
         {
-            Console.WriteLine("Unesite broj benchmarka (1-22):");
+            Console.WriteLine("Unesite broj benchmarka (1-18):");
             if (!int.TryParse(Console.ReadLine(), out int choice))
             {
                 Console.WriteLine("Neispravan unos.");
@@ -1133,33 +879,67 @@ namespace MyBenchmarks
                     BenchmarkRunner.Run<GroupByObjectEfficiency>();
                     break;
                 case 15:
-                    BenchmarkRunner.Run<CheapAnyAllEfficiency>();
-                    break;
-                case 16:
-                    BenchmarkRunner.Run<ExpensiveAnyAllEfficiency>();
-                    break;
-                case 17:
-                    BenchmarkRunner.Run<AnyAllStringEfficiency>();
-                    break;
-                case 18:
-                    BenchmarkRunner.Run<AnyAllObjectEfficiency>();
-                    break;
-                case 19:
                     BenchmarkRunner.Run<TakeEfficiency>();
                     break;
-                case 20:
+                case 16:
                     BenchmarkRunner.Run<SkipEfficiency>();
                     break;
-                case 21:
+                case 17:
                     BenchmarkRunner.Run<PaginationEfficiency>();
                     break;
-                case 22:
+                case 18:
                     BenchmarkRunner.Run<SelectManyEfficiency>();
                     break;
                 default:
                     Console.WriteLine("Nepoznat broj benchmarka.");
                     break;
             }
+        }
+
+        public static void LazyEvaluationExample()
+        {
+            IEnumerable<int> brojevi = Enumerable.Range(1, 10);
+
+            var filtrirani = brojevi
+                .Where(x =>
+                {
+                    Console.WriteLine($"Proveravam {x}");
+                    return x % 2 == 0;
+                })
+                .Select(x => x * 10);
+
+            Console.WriteLine("Kreiran upit, ali još nije izvršen.");
+
+            foreach (var broj in filtrirani)
+            {
+                Console.WriteLine($"Rezultat: {broj}");
+            }
+        }
+
+        public static void NoLazyEvalExample()
+        {
+            IEnumerable<int> brojevi = Enumerable.Range(1, 10);
+
+            var filtrirani = brojevi
+                .Where(x =>
+                {
+                    Console.WriteLine($"Proveravam {x}");
+                    return x % 2 == 0;
+                })
+                .Select(x => x * 10)
+                .ToList();
+
+            Console.WriteLine("Upit je izvršen i rezultati su odmah kreirani.");
+
+            foreach (var broj in filtrirani)
+            {
+                Console.WriteLine($"Rezultat: {broj}");
+            }
+        }
+
+        public static void Main(string[] args)
+        {
+            BenchmarkTests();
         }
     }
 }
