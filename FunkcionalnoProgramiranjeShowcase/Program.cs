@@ -374,7 +374,7 @@ namespace MyBenchmarks
 
         public AggregateSumEfficiency()
         {
-            numbers = Enumerable.Range(1, N).ToArray();
+            numbers = [.. Enumerable.Range(1, N)];
         }
 
         [Benchmark]
@@ -511,7 +511,7 @@ namespace MyBenchmarks
 
         public GroupByNumberEfficiency()
         {
-            numbers = Enumerable.Range(1, N).ToArray();
+            numbers = [.. Enumerable.Range(1, N)];
         }
 
         [Benchmark]
@@ -522,7 +522,7 @@ namespace MyBenchmarks
             {
                 int key = numbers[i] % 10;
                 if (!groups.ContainsKey(key))
-                    groups[key] = new List<int>();
+                    groups[key] = [];
                 groups[key].Add(numbers[i]);
             }
             return groups;
@@ -536,7 +536,7 @@ namespace MyBenchmarks
             {
                 int key = num % 10;
                 if (!groups.ContainsKey(key))
-                    groups[key] = new List<int>();
+                    groups[key] = [];
                 groups[key].Add(num);
             }
             return groups;
@@ -545,8 +545,7 @@ namespace MyBenchmarks
         [Benchmark]
         public Dictionary<int, List<int>> LinqGroupByModulo()
         {
-            return numbers.GroupBy(x => x % 10)
-                          .ToDictionary(g => g.Key, g => g.ToList());
+            return numbers.GroupBy(x => x % 10).ToDictionary(g => g.Key, g => g.ToList());
         }
     }
 
@@ -603,7 +602,7 @@ namespace MyBenchmarks
         public GroupByObjectEfficiency()
         {
             var rnd = new Random(0);
-            people = Enumerable.Range(1, N).Select(x => new Person { Id = x, Age = rnd.Next(18, 60) }).ToArray();
+            people = [.. Enumerable.Range(1, N).Select(x => new Person { Id = x, Age = rnd.Next(18, 60) })];
         }
 
         public class Person
@@ -651,9 +650,49 @@ namespace MyBenchmarks
     {
         private int N = 10000000;
         private int[] array;
-        private int takeCount = 500000;
+        private int takeCount = 1000;
 
         public TakeEfficiency()
+        {
+            array = Enumerable.Range(1, N).ToArray();
+        }
+
+        [Benchmark]
+        public int[] ForLoopTake()
+        {
+            var result = new int[takeCount];
+            for (int i = 0; i < takeCount; i++)
+                result[i] = array[i];
+            return result;
+        }
+
+        [Benchmark]
+        public int[] ForeachLoopTake()
+        {
+            var result = new int[takeCount];
+            int index = 0;
+            foreach (var item in array)
+            {
+                if (index >= takeCount) break;
+                result[index++] = item;
+            }
+            return result;
+        }
+
+        [Benchmark]
+        public int[] LinqTake()
+        {
+            return array.Take(takeCount).ToArray();
+        }
+    }
+
+    public class TakeEfficiencyLarge
+    {
+        private int N = 10000000;
+        private int[] array;
+        private int takeCount = 500000;
+
+        public TakeEfficiencyLarge()
         {
             array = Enumerable.Range(1, N).ToArray();
         }
@@ -691,9 +730,50 @@ namespace MyBenchmarks
     {
         private int N = 10000000;
         private int[] array;
-        private int skipCount = 500000;
+        private int skipCount = 1000;
 
         public SkipEfficiency()
+        {
+            array = Enumerable.Range(1, N).ToArray();
+        }
+
+        [Benchmark]
+        public int[] ForLoopSkip()
+        {
+            var result = new int[N - skipCount];
+            for (int i = skipCount; i < N; i++)
+                result[i - skipCount] = array[i];
+            return result;
+        }
+
+        [Benchmark]
+        public int[] ForeachLoopSkip()
+        {
+            var result = new int[N - skipCount];
+            int index = 0;
+            int current = 0;
+            foreach (var item in array)
+            {
+                if (current++ < skipCount) continue;
+                result[index++] = item;
+            }
+            return result;
+        }
+
+        [Benchmark]
+        public int[] LinqSkip()
+        {
+            return array.Skip(skipCount).ToArray();
+        }
+    }
+
+    public class SkipEfficiencyLarge
+    {
+        private int N = 10000000;
+        private int[] array;
+        private int skipCount = 500000;
+
+        public SkipEfficiencyLarge()
         {
             array = Enumerable.Range(1, N).ToArray();
         }
@@ -775,11 +855,109 @@ namespace MyBenchmarks
 
     public class SelectManyEfficiency
     {
-        private int N = 100000;
+        private int N = 1000;
         private int M = 10000;
         private int[][] arrayOfArrays;
 
         public SelectManyEfficiency()
+        {
+            arrayOfArrays = new int[N][];
+            for (int i = 0; i < N; i++)
+            {
+                arrayOfArrays[i] = Enumerable.Range(1, M).ToArray();
+            }
+        }
+
+        [Benchmark]
+        public int[] ForLoopSelectMany()
+        {
+            var list = new List<int>(N * M);
+            for (int i = 0; i < arrayOfArrays.Length; i++)
+            {
+                for (int j = 0; j < arrayOfArrays[i].Length; j++)
+                {
+                    list.Add(arrayOfArrays[i][j]);
+                }
+            }
+            return list.ToArray();
+        }
+
+        [Benchmark]
+        public int[] ForeachLoopSelectMany()
+        {
+            var list = new List<int>(N * M);
+            foreach (var inner in arrayOfArrays)
+            {
+                foreach (var item in inner)
+                {
+                    list.Add(item);
+                }
+            }
+            return list.ToArray();
+        }
+
+        [Benchmark]
+        public int[] LinqSelectMany()
+        {
+            return arrayOfArrays.SelectMany(inner => inner).ToArray();
+        }
+    }
+    public class SelectManyEfficiencyMedium
+    {
+        private int N = 10000;
+        private int M = 10000;
+        private int[][] arrayOfArrays;
+
+        public SelectManyEfficiencyMedium()
+        {
+            arrayOfArrays = new int[N][];
+            for (int i = 0; i < N; i++)
+            {
+                arrayOfArrays[i] = Enumerable.Range(1, M).ToArray();
+            }
+        }
+
+        [Benchmark]
+        public int[] ForLoopSelectMany()
+        {
+            var list = new List<int>(N * M);
+            for (int i = 0; i < arrayOfArrays.Length; i++)
+            {
+                for (int j = 0; j < arrayOfArrays[i].Length; j++)
+                {
+                    list.Add(arrayOfArrays[i][j]);
+                }
+            }
+            return list.ToArray();
+        }
+
+        [Benchmark]
+        public int[] ForeachLoopSelectMany()
+        {
+            var list = new List<int>(N * M);
+            foreach (var inner in arrayOfArrays)
+            {
+                foreach (var item in inner)
+                {
+                    list.Add(item);
+                }
+            }
+            return list.ToArray();
+        }
+
+        [Benchmark]
+        public int[] LinqSelectMany()
+        {
+            return arrayOfArrays.SelectMany(inner => inner).ToArray();
+        }
+    }
+    public class SelectManyEfficiencyLarge
+    {
+        private int N = 100000;
+        private int M = 10000;
+        private int[][] arrayOfArrays;
+
+        public SelectManyEfficiencyLarge()
         {
             arrayOfArrays = new int[N][];
             for (int i = 0; i < N; i++)
@@ -827,73 +1005,41 @@ namespace MyBenchmarks
     {
         public static void BenchmarkTests()
         {
-            Console.WriteLine("Unesite broj benchmarka (1-18):");
-            if (!int.TryParse(Console.ReadLine(), out int choice))
+            Type[] benchmarks =
             {
-                Console.WriteLine("Neispravan unos.");
-                return;
+            typeof(SelectEfficiency),
+            typeof(StringEfficiency),
+            typeof(ObjectEfficiency),
+            typeof(ObjectUpdateEfficiency),
+            typeof(CheapWhereEfficiency),
+            typeof(ExpensiveWhereEfficiency),
+            typeof(WhereStringEfficiency),
+            typeof(WhereObjectEfficiency),
+            typeof(AggregateSumEfficiency),
+            typeof(AggregateObjectEfficiency),
+            typeof(GroupByNumberEfficiency),
+            typeof(GroupByStringEfficiency),
+            typeof(TakeEfficiency),
+            typeof(TakeEfficiencyLarge),
+            typeof(SkipEfficiency),
+            typeof(SkipEfficiencyLarge),
+            typeof(PaginationEfficiency),
+            typeof(SelectManyEfficiency),
+            typeof(SelectManyEfficiencyMedium),
+            typeof(SelectManyEfficiencyLarge)
+        };
+
+            for (int i = 0; i < benchmarks.Length; i++)
+            {
+                Console.WriteLine($"\nPokrecem benchmark {i + 1}/{benchmarks.Length}: {benchmarks[i].Name}");
+                BenchmarkRunner.Run(benchmarks[i]);
+
+                Console.WriteLine("\nBenchmark zavrsen");
+
+                Thread.Sleep(15000);
             }
 
-            switch (choice)
-            {
-                case 1:
-                    BenchmarkRunner.Run<SelectEfficiency>();
-                    break;
-                case 2:
-                    BenchmarkRunner.Run<StringEfficiency>();
-                    break;
-                case 3:
-                    BenchmarkRunner.Run<ObjectEfficiency>();
-                    break;
-                case 4:
-                    BenchmarkRunner.Run<ObjectUpdateEfficiency>();
-                    break;
-                case 5:
-                    BenchmarkRunner.Run<CheapWhereEfficiency>();
-                    break;
-                case 6:
-                    BenchmarkRunner.Run<ExpensiveWhereEfficiency>();
-                    break;
-                case 7:
-                    BenchmarkRunner.Run<WhereStringEfficiency>();
-                    break;
-                case 8:
-                    BenchmarkRunner.Run<WhereObjectEfficiency>();
-                    break;
-                case 9:
-                    BenchmarkRunner.Run<AggregateSumEfficiency>();
-                    break;
-                case 10:
-                    BenchmarkRunner.Run<AggregateStringEfficiency>();
-                    break;
-                case 11:
-                    BenchmarkRunner.Run<AggregateObjectEfficiency>();
-                    break;
-                case 12:
-                    BenchmarkRunner.Run<GroupByNumberEfficiency>();
-                    break;
-                case 13:
-                    BenchmarkRunner.Run<GroupByStringEfficiency>();
-                    break;
-                case 14:
-                    BenchmarkRunner.Run<GroupByObjectEfficiency>();
-                    break;
-                case 15:
-                    BenchmarkRunner.Run<TakeEfficiency>();
-                    break;
-                case 16:
-                    BenchmarkRunner.Run<SkipEfficiency>();
-                    break;
-                case 17:
-                    BenchmarkRunner.Run<PaginationEfficiency>();
-                    break;
-                case 18:
-                    BenchmarkRunner.Run<SelectManyEfficiency>();
-                    break;
-                default:
-                    Console.WriteLine("Nepoznat broj benchmarka.");
-                    break;
-            }
+            Console.WriteLine("\nSvi benchmark testovi su zavreni!");
         }
 
         public static void LazyEvaluationExample()
@@ -939,6 +1085,10 @@ namespace MyBenchmarks
 
         public static void Main(string[] args)
         {
+            Console.SetWindowSize(160, 41);
+            Console.SetBufferSize(160, 41);
+            
+            Thread.Sleep(3000);
             BenchmarkTests();
         }
     }
