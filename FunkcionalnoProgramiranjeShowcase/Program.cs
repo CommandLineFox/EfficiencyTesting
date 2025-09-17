@@ -1042,6 +1042,64 @@ namespace MyBenchmarks
             Console.WriteLine("\nSvi benchmark testovi su zavreni!");
         }
 
+        public static void RunBenchmarkMenu()
+        {
+            Console.WriteLine("Choose a benchmark to run:");
+            Console.WriteLine("1 - SelectEfficiency");
+            Console.WriteLine("2 - StringEfficiency");
+            Console.WriteLine("3 - ObjectEfficiency");
+            Console.WriteLine("4 - ObjectUpdateEfficiency");
+            Console.WriteLine("5 - CheapWhereEfficiency");
+            Console.WriteLine("6 - ExpensiveWhereEfficiency");
+            Console.WriteLine("7 - WhereStringEfficiency");
+            Console.WriteLine("8 - WhereObjectEfficiency");
+            Console.WriteLine("9 - AggregateSumEfficiency");
+            Console.WriteLine("10 - AggregateObjectEfficiency");
+            Console.WriteLine("11 - GroupByNumberEfficiency");
+            Console.WriteLine("12 - GroupByStringEfficiency");
+            Console.WriteLine("13 - TakeEfficiency");
+            Console.WriteLine("14 - TakeEfficiencyLarge");
+            Console.WriteLine("15 - SkipEfficiency");
+            Console.WriteLine("16 - SkipEfficiencyLarge");
+            Console.WriteLine("17 - PaginationEfficiency");
+            Console.WriteLine("18 - SelectManyEfficiency");
+            Console.WriteLine("19 - SelectManyEfficiencyMedium");
+            Console.WriteLine("20 - SelectManyEfficiencyLarge");
+
+            Console.Write("\nEnter choice (1-20): ");
+            if (int.TryParse(Console.ReadLine(), out int choice))
+            {
+                switch (choice)
+                {
+                    case 1: BenchmarkRunner.Run<SelectEfficiency>(); break;
+                    case 2: BenchmarkRunner.Run<StringEfficiency>(); break;
+                    case 3: BenchmarkRunner.Run<ObjectEfficiency>(); break;
+                    case 4: BenchmarkRunner.Run<ObjectUpdateEfficiency>(); break;
+                    case 5: BenchmarkRunner.Run<CheapWhereEfficiency>(); break;
+                    case 6: BenchmarkRunner.Run<ExpensiveWhereEfficiency>(); break;
+                    case 7: BenchmarkRunner.Run<WhereStringEfficiency>(); break;
+                    case 8: BenchmarkRunner.Run<WhereObjectEfficiency>(); break;
+                    case 9: BenchmarkRunner.Run<AggregateSumEfficiency>(); break;
+                    case 10: BenchmarkRunner.Run<AggregateObjectEfficiency>(); break;
+                    case 11: BenchmarkRunner.Run<GroupByNumberEfficiency>(); break;
+                    case 12: BenchmarkRunner.Run<GroupByStringEfficiency>(); break;
+                    case 13: BenchmarkRunner.Run<TakeEfficiency>(); break;
+                    case 14: BenchmarkRunner.Run<TakeEfficiencyLarge>(); break;
+                    case 15: BenchmarkRunner.Run<SkipEfficiency>(); break;
+                    case 16: BenchmarkRunner.Run<SkipEfficiencyLarge>(); break;
+                    case 17: BenchmarkRunner.Run<PaginationEfficiency>(); break;
+                    case 18: BenchmarkRunner.Run<SelectManyEfficiency>(); break;
+                    case 19: BenchmarkRunner.Run<SelectManyEfficiencyMedium>(); break;
+                    case 20: BenchmarkRunner.Run<SelectManyEfficiencyLarge>(); break;
+                    default: Console.WriteLine("Invalid choice."); break;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Please enter a number 1-20.");
+            }
+        }
+
         public static void LazyEvaluationExample()
         {
             IEnumerable<int> brojevi = Enumerable.Range(1, 10);
@@ -1085,11 +1143,7 @@ namespace MyBenchmarks
 
         public static void Main(string[] args)
         {
-            Console.SetWindowSize(160, 41);
-            Console.SetBufferSize(160, 41);
-            
-            Thread.Sleep(3000);
-            BenchmarkTests();
+            RunBenchmarkMenu();
         }
     }
 }
